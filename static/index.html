@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TraceMail | AI-Powered Email Threat & Forensic Intelligence Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#0a0d14',
+                            card: '#111622',
+                            border: '#1e293b',
+                            accent: '#06b6d4',
+                            neonGreen: '#10b981',
+                            neonRed: '#ef4444',
+                            neonAmber: '#f59e0b',
+                            blueGlow: '#3b82f6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- jsPDF for Instant Forensic Dossier Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="bg-cyber-bg text-slate-100 min-h-screen font-sans antialiased selection:bg-cyan-500 selection:text-black">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-cyber-border bg-cyber-card/80 backdrop-blur-md sticky top-0 z-50 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                <i data-lucide="shield-alert" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-lg font-bold tracking-wider text-white">TRACE<span class="text-cyan-400">MAIL</span></h1>
+                    <span class="px-2 py-0.5 text-xs font-semibold rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">SIH26106</span>
+                    <span class="px-2 py-0.5 text-xs font-semibold rounded bg-purple-500/20 text-purple-300 border border-purple-500/40">AICTE</span>
+                </div>
+                <p class="text-xs text-slate-400">AI-Powered Email Threat Detection & Infrastructure Forensic Tracing</p>
+            </div>
+        </div>
+
+        <!-- Live Intelligence Status Indicators -->
+        <div class="flex items-center gap-4 text-xs">
+            <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-700">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span class="text-slate-300">SOC Node: <strong class="text-emerald-400">ACTIVE</strong></span>
+            </div>
+            <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-700">
+                <i data-lucide="satellite" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span class="text-slate-300">Geo-IP ASN Feed: <span class="text-cyan-400">SYNCHRONIZED</span></span>
+            </div>
+            <button id="exportPdfBtn" class="hidden items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium rounded-lg shadow-lg shadow-cyan-900/40 transition-all text-xs border border-cyan-400/30">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                Export Forensic Report (PDF)
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+
+        <!-- Quick 1-Click Demo Showcase Presets (Winning the Room) -->
+        <div class="bg-cyber-card border border-cyber-border rounded-xl p-4 shadow-xl">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
+                    <span class="text-sm font-semibold text-slate-200">1-Click Live Demonstration Scenarios:</span>
+                    <span class="text-xs text-slate-400">(Preloaded real-world threat captures for rapid judge review)</span>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <button onclick="loadSample('paypal_phishing')" class="demo-preset-btn group p-3 rounded-lg bg-slate-900/70 border border-red-500/30 hover:border-red-500 hover:bg-red-500/10 text-left transition-all">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-red-400 flex items-center gap-1.5">
+                            <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> PayPal Phishing
+                        </span>
+                        <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-red-950/80 text-red-300 border border-red-800">Critical</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1.5">Lookalike domain, DMARC reject, Bulletproof Russian relay.</p>
+                </button>
+
+                <button onclick="loadSample('ceo_fraud_bec')" class="demo-preset-btn group p-3 rounded-lg bg-slate-900/70 border border-amber-500/30 hover:border-amber-500 hover:bg-amber-500/10 text-left transition-all">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                            <i data-lucide="user-x" class="w-3.5 h-3.5"></i> CEO Fraud / BEC
+                        </span>
+                        <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800">High Risk</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1.5">Display-name spoofing, urgent acquisition wire request.</p>
+                </button>
+
+                <button onclick="loadSample('sbi_kyc_phish')" class="demo-preset-btn group p-3 rounded-lg bg-slate-900/70 border border-orange-500/30 hover:border-orange-500 hover:bg-orange-500/10 text-left transition-all">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-orange-400 flex items-center gap-1.5">
+                            <i data-lucide="landmark" class="w-3.5 h-3.5"></i> SBI Bank KYC Scam
+                        </span>
+                        <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-orange-950/80 text-orange-300 border border-orange-800">High Risk</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1.5">Aadhaar/PAN phishing lure, spoofed Indian banking gateway.</p>
+                </button>
+
+                <button onclick="loadSample('legitimate_email')" class="demo-preset-btn group p-3 rounded-lg bg-slate-900/70 border border-emerald-500/30 hover:border-emerald-500 hover:bg-emerald-500/10 text-left transition-all">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                            <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Google Cloud Notice
+                        </span>
+                        <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800">Clean</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1.5">100% verified SPF, DKIM, DMARC, legitimate Ashburn MX.</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Input Section: Drag & Drop .eml or Paste Raw Header -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left: Input Area -->
+            <div class="lg:col-span-1 bg-cyber-card border border-cyber-border rounded-xl p-5 shadow-xl flex flex-col justify-between">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-4 h-4 text-cyan-400"></i>
+                            Input Email Stream
+                        </h2>
+                        <span class="text-[11px] text-slate-400">RFC822 / .EML / Raw</span>
+                    </div>
+
+                    <!-- File Dropzone -->
+                    <div id="dropzone" class="border-2 border-dashed border-slate-700 hover:border-cyan-500/70 rounded-xl p-4 text-center cursor-pointer transition-colors bg-slate-900/50">
+                        <input type="file" id="fileInput" accept=".eml,.txt" class="hidden" />
+                        <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
+                        <p class="text-xs text-slate-200 font-medium">Drop <span class="text-cyan-400 font-mono">.eml</span> or raw mail file here</p>
+                        <p class="text-[10px] text-slate-500 mt-1">or click to browse local files</p>
+                    </div>
+
+                    <!-- Raw Text Paste Box -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label for="rawInput" class="text-xs text-slate-400 font-mono">Or paste raw email / headers:</label>
+                            <button onclick="clearInput()" class="text-[10px] text-slate-500 hover:text-slate-300">Clear</button>
+                        </div>
+                        <textarea id="rawInput" rows="7" placeholder="Paste headers starting with Received: or full email message..." 
+                            class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-500 resize-none"></textarea>
+                    </div>
+                </div>
+
+                <button id="analyzeBtn" onclick="runAnalysis()" class="w-full mt-4 py-2.5 px-4 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-cyan-900/50 transition-all">
+                    <i data-lucide="search-code" class="w-4 h-4"></i>
+                    <span>Execute Forensic Analysis</span>
+                </button>
+            </div>
+
+            <!-- Right: High Level Threat Executive Summary -->
+            <div class="lg:col-span-2 bg-cyber-card border border-cyber-border rounded-xl p-5 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                                <i data-lucide="activity" class="w-5 h-5 text-cyan-400"></i>
+                                Threat Verdict & Identity Validation
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-0.5">Real-time heuristic & deterministic authentication verdict</p>
+                        </div>
+                        <div id="verdictBadge" class="px-3 py-1 rounded-full text-xs font-bold font-mono uppercase bg-slate-800 text-slate-400 border border-slate-700">
+                            Awaiting Stream
+                        </div>
+                    </div>
+
+                    <!-- Top Metrics Cards -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                        <!-- Threat Score Gauge Card -->
+                        <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-3 text-center">
+                            <span class="text-[11px] text-slate-400 block mb-1">Threat Score</span>
+                            <div class="text-2xl font-black font-mono text-cyan-400" id="threatScoreDisplay">--</div>
+                            <span class="text-[10px] text-slate-500" id="threatSeverityLabel">Range: 0-100</span>
+                        </div>
+                        <!-- SPF Card -->
+                        <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-3 text-center">
+                            <span class="text-[11px] text-slate-400 block mb-1">SPF Policy</span>
+                            <div class="text-lg font-bold font-mono text-slate-400" id="spfStatusBadge">--</div>
+                            <span class="text-[10px] text-slate-500">IP Authorization</span>
+                        </div>
+                        <!-- DKIM Card -->
+                        <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-3 text-center">
+                            <span class="text-[11px] text-slate-400 block mb-1">DKIM Cryptography</span>
+                            <div class="text-lg font-bold font-mono text-slate-400" id="dkimStatusBadge">--</div>
+                            <span class="text-[10px] text-slate-500">Body Tamper Integrity</span>
+                        </div>
+                        <!-- DMARC Card -->
+                        <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-3 text-center">
+                            <span class="text-[11px] text-slate-400 block mb-1">DMARC Alignment</span>
+                            <div class="text-lg font-bold font-mono text-slate-400" id="dmarcStatusBadge">--</div>
+                            <span class="text-[10px] text-slate-500">Domain Enforcement</span>
+                        </div>
+                    </div>
+
+                    <!-- Email Metadata Bar -->
+                    <div class="bg-slate-950/70 border border-slate-800/80 rounded-lg p-3.5 text-xs space-y-1.5 font-mono">
+                        <div class="flex flex-wrap gap-2 text-slate-300">
+                            <span class="text-slate-500 w-20">SUBJECT:</span>
+                            <span id="metaSubject" class="font-semibold text-slate-100 truncate flex-1">--</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 text-slate-300">
+                            <span class="text-slate-500 w-20">FROM:</span>
+                            <span id="metaFrom" class="text-cyan-300 truncate flex-1">--</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 text-slate-300">
+                            <span class="text-slate-500 w-20">ACTUAL DOMAIN:</span>
+                            <span id="metaDomain" class="text-amber-300 font-bold">--</span>
+                            <span id="metaLookalikeBadge" class="hidden text-[10px] px-1.5 py-0.5 rounded bg-red-900/70 text-red-300 border border-red-700">LOOKALIKE DETECTED</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 text-slate-300">
+                            <span class="text-slate-500 w-20">INCIDENT ACTION:</span>
+                            <span id="metaAction" class="text-slate-300 flex-1">System standby. Awaiting analysis payload.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Interactive Geo-Forensic Relay Map -->
+        <div class="bg-cyber-card border border-cyber-border rounded-xl p-5 shadow-xl space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                        <i data-lucide="globe" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-slate-100">Global SMTP Relay Path Forensics</h2>
+                        <p class="text-xs text-slate-400">Reconstructed hop-by-hop transmission route mapped across physical infrastructure</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 text-xs">
+                    <span class="flex items-center gap-1.5 text-red-400">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Origin Node
+                    </span>
+                    <span class="flex items-center gap-1.5 text-amber-400">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Intermediate MTA
+                    </span>
+                    <span class="flex items-center gap-1.5 text-emerald-400">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Recipient MX
+                    </span>
+                </div>
+            </div>
+
+            <!-- Leaflet Map Container -->
+            <div class="relative w-full h-[380px] rounded-xl overflow-hidden border border-slate-800 shadow-inner">
+                <div id="map" class="w-full h-full z-10"></div>
+                <!-- Map Overlay Badge -->
+                <div id="mapOverlayNotice" class="absolute bottom-3 left-3 z-20 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-700 text-[11px] text-slate-300 flex items-center gap-2">
+                    <i data-lucide="info" class="w-3.5 h-3.5 text-cyan-400"></i>
+                    <span>Click on map nodes to inspect server host, ASN, and hosting provider metadata.</span>
+                </div>
+            </div>
+
+            <!-- Hop-by-Hop Investigation Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-slate-400 uppercase tracking-wider font-mono bg-slate-950/60">
+                            <th class="py-2.5 px-3">Hop</th>
+                            <th class="py-2.5 px-3">Role</th>
+                            <th class="py-2.5 px-3">IP Address</th>
+                            <th class="py-2.5 px-3">Geolocation</th>
+                            <th class="py-2.5 px-3">Autonomous System (ASN) & Host</th>
+                            <th class="py-2.5 px-3">Trust State</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hopsTableBody" class="divide-y divide-slate-800/60 font-mono">
+                        <tr>
+                            <td colspan="6" class="py-6 text-center text-slate-500 italic">No hops parsed yet. Select a sample above or upload an email to inspect relay chain.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section: Threat Intelligence Breakdown & Indicators of Compromise (IoCs) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Threat Signals & Heuristics -->
+            <div class="bg-cyber-card border border-cyber-border rounded-xl p-5 shadow-xl">
+                <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2 mb-3">
+                    <i data-lucide="list-checks" class="w-4 h-4 text-cyan-400"></i>
+                    Diagnostic Threat Indicators
+                </h3>
+                <div id="signalsContainer" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                    <p class="text-xs text-slate-500 italic">Waiting for analysis...</p>
+                </div>
+            </div>
+
+            <!-- IoCs Table (Incident Response Export) -->
+            <div class="bg-cyber-card border border-cyber-border rounded-xl p-5 shadow-xl">
+                <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2 mb-3">
+                    <i data-lucide="crosshair" class="w-4 h-4 text-red-400"></i>
+                    Indicators of Compromise (IoCs) for Firewall/SOC
+                </h3>
+                <div class="overflow-x-auto max-h-[300px] overflow-y-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400 uppercase font-mono bg-slate-950/60">
+                                <th class="py-2 px-2.5">Type</th>
+                                <th class="py-2 px-2.5">Indicator Value</th>
+                                <th class="py-2 px-2.5">Context</th>
+                            </tr>
+                        </thead>
+                        <tbody id="iocsTableBody" class="divide-y divide-slate-800/60 font-mono text-[11px]">
+                            <tr>
+                                <td colspan="3" class="py-4 text-center text-slate-500 italic">No active indicators identified.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="border-t border-cyber-border mt-12 py-6 px-6 text-center text-xs text-slate-500">
+        <p>AegisForensics Platform &bull; Developed for Smart India Hackathon (SIH26106) &bull; AICTE Cybersecurity & Forensics</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
